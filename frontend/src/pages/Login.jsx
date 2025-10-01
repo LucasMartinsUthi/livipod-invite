@@ -66,6 +66,10 @@ export default function Login() {
     }
   };
 
+  const handleOpenInApp = () => {
+    window.location.href = 'livipod://invite';
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.card}>
@@ -102,6 +106,13 @@ export default function Login() {
             </button>
           </form>
         )}
+        <button
+          onClick={handleOpenInApp}
+          style={styles.openAppButton}
+          type="button"
+        >
+          📱 Open in LiviPod App
+        </button>
         <p style={styles.link}>
           Don't have an account? <Link to="/register">Register</Link>
         </p>
@@ -150,6 +161,17 @@ const styles = {
   error: {
     color: 'red',
     fontSize: '0.875rem',
+  },
+  openAppButton: {
+    width: '100%',
+    padding: '0.75rem',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    marginTop: '1rem',
   },
   link: {
     marginTop: '1rem',
