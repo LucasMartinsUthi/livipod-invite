@@ -1,7 +1,7 @@
 {
-  "name": "frontend",
+  "name": "livipod-invite-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "firebase": "^12.3.0",
+    "firebase-admin": "^13.5.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^7.9.3"
