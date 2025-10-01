@@ -47,6 +47,7 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 .firebaserc
+*firebase-adminsdk*.json
 
 # Temporary files
 *.tmp

@@ -1,25 +1,66 @@
-import { useState } from 'react';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useState, useEffect } from 'react';
+import { RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useNavigate, Link } from 'react-router-dom';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [otp, setOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [confirmationResult, setConfirmationResult] = useState(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  useEffect(() => {
+    // Initialize reCAPTCHA
+    if (!window.recaptchaVerifier) {
+      window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+      });
+    }
+
+    return () => {
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, []);
+
+  const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      const appVerifier = window.recaptchaVerifier;
+      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+      setConfirmationResult(confirmation);
+      setError('OTP sent to your phone!');
     } catch (err) {
       setError(err.message);
+      if (window.recaptchaVerifier) {
+        window.recaptchaVerifier.clear();
+        window.recaptchaVerifier = null;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      await confirmationResult.confirm(otp);
+      navigate('/');
+    } catch (err) {
+      setError('Invalid OTP. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -29,32 +70,43 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <h1>Login</h1>
-        <form onSubmit={handleLogin} style={styles.form}>
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={styles.input}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={styles.input}
-            required
-          />
-          {error && <p style={styles.error}>{error}</p>}
-          <button type="submit" disabled={loading} style={styles.button}>
-            {loading ? 'Loading...' : 'Login'}
-          </button>
-        </form>
+        {!confirmationResult ? (
+          <form onSubmit={handleSendOTP} style={styles.form}>
+            <input
+              type="tel"
+              placeholder="Phone Number (e.g., +1234567890)"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              style={styles.input}
+              required
+            />
+            {error && <p style={styles.error}>{error}</p>}
+            <button type="submit" disabled={loading} style={styles.button}>
+              {loading ? 'Sending...' : 'Send OTP'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOTP} style={styles.form}>
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              style={styles.input}
+              required
+              maxLength={6}
+            />
+            {error && <p style={styles.error}>{error}</p>}
+            <button type="submit" disabled={loading} style={styles.button}>
+              {loading ? 'Verifying...' : 'Verify OTP'}
+            </button>
+          </form>
+        )}
         <p style={styles.link}>
           Don't have an account? <Link to="/register">Register</Link>
         </p>
       </div>
+      <div id="recaptcha-container"></div>
     </div>
   );
 }
