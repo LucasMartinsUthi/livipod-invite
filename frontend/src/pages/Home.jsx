@@ -80,6 +80,10 @@ export default function Home() {
     navigate('/login');
   };
 
+  const handleOpenInApp = () => {
+    window.location.href = 'livipod://invite';
+  };
+
   if (!user) return null;
 
   return (
@@ -107,6 +111,14 @@ export default function Home() {
             />
           </div>
         )}
+
+        <button
+          onClick={handleOpenInApp}
+          style={styles.openAppButton}
+          type="button"
+        >
+          📱 Open in LiviPod App
+        </button>
 
         <button onClick={handleLogout} style={{...styles.button, ...styles.logoutButton}}>
           Logout
@@ -166,5 +178,16 @@ const styles = {
     border: '1px solid #ddd',
     borderRadius: '4px',
     marginTop: '0.5rem',
+  },
+  openAppButton: {
+    width: '100%',
+    padding: '0.75rem',
+    backgroundColor: '#28a745',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    marginTop: '1rem',
   },
 };
